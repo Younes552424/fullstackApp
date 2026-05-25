@@ -22,14 +22,21 @@ app.use(express.static(frontendBuildPath));
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB using MONGO_URL from Railway
-const mongoUri = process.env.MONGO_URL || process.env.MONGO_URI;
-if (!mongoUri) {
-    console.error("❌ MONGO_URL or MONGO_URI environment variable is not set");
+const mongoUri =
+  process.env.MONGODB_URL || // Railway provides this
+  process.env.MONGO_URL ||
+  process.env.MONGO_URI ||
+  "mongodb://127.0.0.1:27017/fullstack"; // fallback for local dev
+
+if (!mongoUri || !mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
+  console.error('❌ Invalid MongoDB connection string. Set MONGODB_URL, MONGO_URL, or MONGO_URI correctly.');
+  process.exit(1);
 }
 
-mongoose.connect(mongoUri)
-  .then(() => console.log("✅ Connecté à MongoDB"))
-  .catch((err) => console.error("❌ Erreur de connexion à MongoDB:", err));
+mongoose
+  .connect(mongoUri)
+  .then(() => console.log('✅ Connecté à MongoDB'))
+  .catch((err) => console.error('❌ Erreur de connexion à MongoDB:', err));
 
 // API route for status check
 app.get("/api/status", (req, res) => {
