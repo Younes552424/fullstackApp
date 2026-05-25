@@ -6,10 +6,12 @@
     "install:frontend": "cd frontend && npm ci",
     "install:backend": "cd backend && npm ci",
     "build:frontend": "cd frontend && npm run build",
-    "postinstall": "npm run install:frontend && npm run install:backend && npm run build:frontend",
+    "build": "npm run install:frontend && npm run install:backend && npm run build:frontend",
+    "postinstall": "npm run build",
     "start": "node backend/server.js"
   },
   "engines": {
     "node": ">=18"
   }
 }
+
