@@ -1,7 +1,9 @@
-require("dotenv").config();
+// Fix: expose Web Crypto API globally for MongoDB driver (Node.js 18+)
+if (typeof globalThis.crypto === 'undefined') {
+  globalThis.crypto = require('crypto').webcrypto;
+}
 
-// Import crypto module for MongoDB authentication
-const crypto = require("crypto");
+require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
