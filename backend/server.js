@@ -44,14 +44,18 @@ app.get("/api/status", (req, res) => {
 });
 
 // Serve React app for all other GET requests (SPA fallback)
-// Use a catch-all route that matches everything
-app.get("*", (req, res) => {
-    res.sendFile(path.join(frontendBuildPath, "index.html"), (err) => {
-        if (err) {
-            // If frontend build doesn't exist, return a simple message
-            res.status(200).json({ message: "API is running. Frontend build not found." });
-        }
-    });
+// Use middleware instead of route to avoid path-to-regexp issues
+app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api')) {
+        res.sendFile(path.join(frontendBuildPath, "index.html"), (err) => {
+            if (err) {
+                // If frontend build doesn't exist, return a simple message
+                res.status(200).json({ message: "API is running. Frontend build not found." });
+            }
+        });
+    } else {
+        next();
+    }
 });
 
 app.listen(PORT, () => {
