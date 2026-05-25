@@ -21,15 +21,23 @@ app.use(express.static(frontendBuildPath));
 
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB using MONGO_URL from Railway
+// Connect to MongoDB
+// Railway injecte automatiquement MONGODB_URL dans le conteneur.
+// En local, définissez MONGO_URL dans backend/.env
+// ⚠️ Aucun fallback localhost – on arrête le serveur proprement si aucune variable n'est définie.
 const mongoUri =
-  process.env.MONGODB_URL || // Railway provides this
+  process.env.MONGODB_URL ||
   process.env.MONGO_URL ||
-  process.env.MONGO_URI ||
-  "mongodb://127.0.0.1:27017/fullstack"; // fallback for local dev
+  process.env.MONGO_URI;
 
-if (!mongoUri || !mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
-  console.error('❌ Invalid MongoDB connection string. Set MONGODB_URL, MONGO_URL, or MONGO_URI correctly.');
+if (!mongoUri) {
+  console.error('❌ Aucune variable de connexion MongoDB trouvée. Définissez MONGODB_URL dans Railway → Settings → Variables.');
+  process.exit(1);
+}
+
+if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
+  console.error('❌ Format invalide. La chaîne doit commencer par mongodb:// ou mongodb+srv://');
+  console.error('❌ Valeur reçue :', mongoUri);
   process.exit(1);
 }
 
@@ -68,7 +76,8 @@ app.use((req, res, next) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Serveur lancé sur http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Serveur lancé sur http://0.0.0.0:${PORT}`);
+    console.log(`✅ MongoDB URI utilisée: ${mongoUri.replace(/:([^@]+)@/, ':***@')}`);
 });
 
