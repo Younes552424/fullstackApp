@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+// Import crypto module for MongoDB authentication
+const crypto = require("crypto");
+
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
