@@ -11,16 +11,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
-app.use(express.static(path.join(__dirname, "../frontend/build")));
-// Serve index.html for the root path
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
-});
+
+// Serve static files from frontend build
+const frontendBuildPath = path.join(__dirname, "../frontend/build");
+app.use(express.static(frontendBuildPath));
 
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
+// Connect to MongoDB using MONGO_URL from Railway
 const mongoUri = process.env.MONGO_URL || process.env.MONGO_URI;
+if (!mongoUri) {
+    console.error("❌ MONGO_URL or MONGO_URI environment variable is not set");
+}
+
 mongoose.connect(mongoUri)
   .then(() => console.log("✅ Connecté à MongoDB"))
   .catch((err) => console.error("❌ Erreur de connexion à MongoDB:", err));
@@ -40,14 +43,17 @@ app.get("/api/status", (req, res) => {
     });
 });
 
-app.use((req, res, next) => {
-    if (req.method === 'GET') {
-        res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
-    } else {
-        next();
-    }
+// Serve React app for all other GET requests (SPA fallback)
+app.get("/:path(.*)", (req, res) => {
+    res.sendFile(path.join(frontendBuildPath, "index.html"), (err) => {
+        if (err) {
+            // If frontend build doesn't exist, return a simple message
+            res.status(200).json({ message: "API is running. Frontend build not found." });
+        }
+    });
 });
 
 app.listen(PORT, () => {
     console.log(`Serveur lancé sur http://localhost:${PORT}`);
 });
+
