@@ -44,7 +44,8 @@ app.get("/api/status", (req, res) => {
 });
 
 // Serve React app for all other GET requests (SPA fallback)
-app.get("/:path(.*)", (req, res) => {
+// Use a catch-all route that matches everything
+app.get("*", (req, res) => {
     res.sendFile(path.join(frontendBuildPath, "index.html"), (err) => {
         if (err) {
             // If frontend build doesn't exist, return a simple message
