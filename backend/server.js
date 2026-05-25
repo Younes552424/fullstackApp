@@ -22,14 +22,20 @@ app.use(express.static(frontendBuildPath));
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB using MONGO_URL from Railway
-const mongoUri = process.env.MONGO_URL || process.env.MONGO_URI;
+const mongoUri = process.env.MONGO_URL;
 if (!mongoUri) {
-    console.error("❌ MONGO_URL or MONGO_URI environment variable is not set");
+    console.error("❌ MONGO_URL environment variable is not set. MongoDB connection will fail.");
+    console.error("Available env vars:", Object.keys(process.env).filter(k => k.includes('MONGO')));
+} else {
+    console.log("✅ MONGO_URL is set, attempting connection...");
 }
 
-mongoose.connect(mongoUri)
+mongoose.connect(mongoUri, {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+})
   .then(() => console.log("✅ Connecté à MongoDB"))
-  .catch((err) => console.error("❌ Erreur de connexion à MongoDB:", err));
+  .catch((err) => console.error("❌ Erreur de connexion à MongoDB:", err.message));
 
 // API route for status check
 app.get("/api/status", (req, res) => {
