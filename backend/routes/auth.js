@@ -171,4 +171,18 @@ router.delete("/notes/:id", auth, async (req, res) => {
   }
 });
 
+// 7. DELETE /profile - Delete user account
+router.delete("/profile", auth, async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur non trouvé." });
+    }
+    res.json({ message: "Compte utilisateur supprimé avec succès." });
+  } catch (err) {
+    console.error("Delete User Error:", err);
+    res.status(500).json({ error: "Erreur lors de la suppression du compte." });
+  }
+});
+
 module.exports = router;
